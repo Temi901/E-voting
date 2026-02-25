@@ -1,0 +1,241 @@
+{% extends 'voting/base.html' %}
+
+{% block title %}Vote - {{ election.title }}{% endblock %}
+
+{% block content %}
+<style>
+    :root {
+        --ink: #0d0f14; --surface: #f5f4f0; --card: #ffffff;
+        --accent: #1a3c5e; --gold: #c9a84c; --gold-light: #f0d98c;
+        --muted: #6b7280; --border: #e2ddd6; --radius: 12px;
+        --transition: 0.28s cubic-bezier(.4,0,.2,1);
+    }
+
+    .vote-wrap { max-width: 900px; margin: 0 auto; padding: 48px 24px 80px; }
+
+    /* ── HEADER ──────────────────────────────────────────── */
+    .vote-header {
+        margin-bottom: 36px;
+        animation: fadeUp 0.5s cubic-bezier(.4,0,.2,1) both;
+    }
+    .vote-eyebrow {
+        display: inline-flex; align-items: center; gap: 7px;
+        font-size: 0.7rem; font-weight: 600; letter-spacing: 0.1em;
+        text-transform: uppercase; color: var(--gold);
+        margin-bottom: 10px;
+    }
+    .vote-title {
+        font-family: 'Playfair Display', serif;
+        font-size: 2rem; font-weight: 700; color: var(--ink);
+        letter-spacing: -0.02em; margin-bottom: 8px;
+    }
+    .vote-desc { color: var(--muted); font-size: 0.95rem; line-height: 1.65; max-width: 600px; }
+
+    /* ── INFO BAR ─────────────────────────────────────────── */
+    .vote-infobar {
+        display: grid; grid-template-columns: 1fr 1fr;
+        gap: 16px; margin-bottom: 36px;
+        animation: fadeUp 0.5s 0.08s cubic-bezier(.4,0,.2,1) both;
+    }
+    .info-box {
+        background: var(--card); border: 1px solid var(--border);
+        border-radius: var(--radius); padding: 16px 18px;
+        display: flex; align-items: flex-start; gap: 12px;
+    }
+    .info-box-icon {
+        width: 36px; height: 36px; flex-shrink: 0;
+        border-radius: 8px;
+        background: linear-gradient(135deg, #e8f0f9 0%, #d4e4f4 100%);
+        display: flex; align-items: center; justify-content: center; font-size: 0.95rem;
+    }
+    .info-box-label { font-size: 0.72rem; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 3px; }
+    .info-box-value { font-size: 0.88rem; font-weight: 500; color: var(--ink); }
+
+    /* ── CANDIDATES ──────────────────────────────────────── */
+    .candidates-hdr {
+        font-family: 'Playfair Display', serif;
+        font-size: 1.2rem; font-weight: 700; color: var(--ink);
+        margin-bottom: 20px;
+        display: flex; align-items: center; gap: 10px;
+    }
+    .candidates-hdr::after {
+        content: ''; flex: 1; height: 1px; background: var(--border);
+    }
+
+    .candidates-grid {
+        display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+        gap: 18px; margin-bottom: 36px;
+    }
+
+    .candidate-card { position: relative; }
+    .candidate-card input[type="radio"] {
+        position: absolute; opacity: 0; width: 0; height: 0;
+    }
+    .candidate-label {
+        display: flex; flex-direction: column;
+        background: var(--card); border: 2px solid var(--border);
+        border-radius: 16px; padding: 24px;
+        cursor: pointer;
+        transition: all var(--transition);
+        height: 100%;
+    }
+    .candidate-label:hover {
+        border-color: rgba(26,60,94,0.3);
+        box-shadow: 0 6px 24px rgba(26,60,94,0.1);
+        transform: translateY(-2px);
+    }
+    .candidate-card input:checked + .candidate-label {
+        border-color: var(--accent);
+        box-shadow: 0 0 0 4px rgba(26,60,94,0.1), 0 8px 24px rgba(26,60,94,0.12);
+        background: linear-gradient(135deg, #f0f6ff 0%, var(--card) 100%);
+    }
+
+    /* Check indicator */
+    .candidate-label::after {
+        content: '';
+        position: absolute; top: 16px; right: 16px;
+        width: 22px; height: 22px; border-radius: 50%;
+        border: 2px solid var(--border);
+        background: var(--surface);
+        transition: all var(--transition);
+    }
+    .candidate-card input:checked + .candidate-label::after {
+        border-color: var(--accent);
+        background: var(--accent);
+        box-shadow: inset 0 0 0 3px #fff;
+    }
+
+    .candidate-photo {
+        width: 72px; height: 72px; object-fit: cover;
+        border-radius: 50%; margin-bottom: 14px;
+        border: 3px solid var(--border);
+    }
+    .candidate-photo-placeholder {
+        width: 72px; height: 72px; border-radius: 50%;
+        background: linear-gradient(135deg, var(--accent) 0%, #24527a 100%);
+        display: flex; align-items: center; justify-content: center;
+        font-size: 1.6rem; font-weight: 700; color: #fff;
+        margin-bottom: 14px;
+        font-family: 'Playfair Display', serif;
+    }
+    .candidate-name {
+        font-family: 'Playfair Display', serif;
+        font-size: 1.05rem; font-weight: 700; color: var(--ink);
+        margin-bottom: 3px;
+    }
+    .candidate-party {
+        font-size: 0.78rem; font-weight: 600; color: var(--gold);
+        text-transform: uppercase; letter-spacing: 0.07em;
+        margin-bottom: 14px;
+    }
+    .candidate-detail-label {
+        font-size: 0.68rem; font-weight: 700; color: var(--muted);
+        letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 4px;
+    }
+    .candidate-detail-text {
+        font-size: 0.82rem; color: var(--muted); line-height: 1.6;
+        margin-bottom: 12px;
+    }
+
+    /* ── ACTIONS ─────────────────────────────────────────── */
+    .vote-actions {
+        display: flex; gap: 14px; justify-content: flex-end;
+        padding-top: 24px; border-top: 1px solid var(--border);
+    }
+    .btn-cancel {
+        display: inline-flex; align-items: center; gap: 7px;
+        padding: 12px 22px; border-radius: var(--radius);
+        text-decoration: none; font-weight: 500; font-size: 0.9rem;
+        color: var(--muted);
+        background: var(--surface); border: 1.5px solid var(--border);
+        transition: all var(--transition);
+    }
+    .btn-cancel:hover { border-color: rgba(107,114,128,0.4); color: var(--ink); }
+    .btn-confirm {
+        display: inline-flex; align-items: center; gap: 8px;
+        padding: 12px 28px; border-radius: var(--radius);
+        font-family: 'DM Sans', sans-serif;
+        font-weight: 600; font-size: 0.95rem;
+        background: var(--accent); color: #fff;
+        border: none; cursor: pointer;
+        box-shadow: 0 4px 14px rgba(26,60,94,0.25);
+        transition: all var(--transition);
+    }
+    .btn-confirm:hover { background: #24527a; transform: translateY(-1px); box-shadow: 0 8px 22px rgba(26,60,94,0.3); }
+
+    @keyframes fadeUp { from{opacity:0;transform:translateY(14px)} to{opacity:1;transform:none} }
+
+    @media (max-width: 600px) {
+        .vote-infobar { grid-template-columns: 1fr; }
+        .candidates-grid { grid-template-columns: 1fr; }
+        .vote-actions { flex-direction: column-reverse; }
+        .btn-cancel, .btn-confirm { width: 100%; justify-content: center; }
+    }
+</style>
+
+<div class="vote-wrap">
+    <div class="vote-header">
+        <p class="vote-eyebrow"><i class="fas fa-vote-yea"></i> Cast Your Vote</p>
+        <h1 class="vote-title">{{ election.title }}</h1>
+        <p class="vote-desc">{{ election.description }}</p>
+    </div>
+
+    <div class="vote-infobar">
+        <div class="info-box">
+            <div class="info-box-icon">⏰</div>
+            <div>
+                <p class="info-box-label">Election Period</p>
+                <p class="info-box-value">{{ election.start_date|date:"M d, Y H:i" }} — {{ election.end_date|date:"M d, Y H:i" }}</p>
+            </div>
+        </div>
+        <div class="info-box">
+            <div class="info-box-icon">⚠️</div>
+            <div>
+                <p class="info-box-label">Important Notice</p>
+                <p class="info-box-value">You can only vote once. Please choose carefully.</p>
+            </div>
+        </div>
+    </div>
+
+    <h2 class="candidates-hdr">Select Your Candidate</h2>
+
+    <form method="post" id="votingForm">
+        {% csrf_token %}
+
+        <div class="candidates-grid">
+            {% for candidate in candidates %}
+            <div class="candidate-card">
+                <input type="radio" name="candidate_id" value="{{ candidate.id }}"
+                       id="candidate_{{ candidate.id }}" required>
+                <label class="candidate-label" for="candidate_{{ candidate.id }}">
+                    {% if candidate.photo %}
+                    <img src="{{ candidate.photo.url }}" alt="{{ candidate.name }}" class="candidate-photo">
+                    {% else %}
+                    <div class="candidate-photo-placeholder">{{ candidate.name|slice:":1"|upper }}</div>
+                    {% endif %}
+
+                    <p class="candidate-name">{{ candidate.name }}</p>
+                    <p class="candidate-party">{{ candidate.party }}</p>
+
+                    <p class="candidate-detail-label">Biography</p>
+                    <p class="candidate-detail-text">{{ candidate.biography|truncatewords:25 }}</p>
+
+                    <p class="candidate-detail-label">Manifesto</p>
+                    <p class="candidate-detail-text">{{ candidate.manifesto|truncatewords:25 }}</p>
+                </label>
+            </div>
+            {% endfor %}
+        </div>
+
+        <div class="vote-actions">
+            <a href="{% url 'dashboard' %}" class="btn-cancel">
+                <i class="fas fa-arrow-left"></i> Cancel
+            </a>
+            <button type="submit" class="btn-confirm"
+                    onclick="return confirm('Are you sure you want to cast your vote? This action cannot be undone.')">
+                <i class="fas fa-check-circle"></i> Confirm Vote
+            </button>
+        </div>
+    </form>
+</div>
+{% endblock %}

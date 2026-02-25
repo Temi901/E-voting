@@ -1,0 +1,328 @@
+{% extends 'voting/base.html' %}
+
+{% block title %}Results - {{ election.title }}{% endblock %}
+
+{% block content %}
+<style>
+    :root {
+        --ink: #0d0f14; --surface: #f5f4f0; --card: #ffffff;
+        --accent: #1a3c5e; --gold: #c9a84c; --gold-light: #f0d98c;
+        --muted: #6b7280; --border: #e2ddd6; --radius: 12px;
+        --transition: 0.28s cubic-bezier(.4,0,.2,1);
+    }
+
+    .results-wrap { max-width: 900px; margin: 0 auto; padding: 48px 24px 80px; }
+
+    /* ── HEADER ──────────────────────────────────────────── */
+    .results-header {
+        background: var(--accent); border-radius: 20px;
+        padding: 36px 36px 32px;
+        position: relative; overflow: hidden;
+        margin-bottom: 32px;
+        animation: fadeUp 0.5s cubic-bezier(.4,0,.2,1) both;
+    }
+    .results-header-bg {
+        position: absolute; inset: 0;
+        background:
+            radial-gradient(ellipse 60% 80% at 90% 50%, rgba(201,168,76,0.1) 0%, transparent 60%),
+            linear-gradient(150deg, #0d1f33 0%, #1a3c5e 100%);
+    }
+    .results-header-bg::after {
+        content: '';
+        position: absolute; inset: 0;
+        background-image: radial-gradient(circle, rgba(255,255,255,0.04) 1px, transparent 1px);
+        background-size: 30px 30px;
+    }
+    .results-header-inner { position: relative; z-index: 2; }
+    .results-eyebrow {
+        font-size: 0.7rem; font-weight: 600; letter-spacing: 0.12em;
+        text-transform: uppercase; color: var(--gold); margin-bottom: 8px;
+    }
+    .results-title {
+        font-family: 'Playfair Display', serif;
+        font-size: 1.9rem; font-weight: 700; color: #fff;
+        letter-spacing: -0.02em; margin-bottom: 10px;
+    }
+    .results-meta {
+        display: flex; flex-wrap: wrap; gap: 10px; align-items: center;
+        margin-bottom: 22px;
+    }
+    .results-badge {
+        display: inline-flex; align-items: center; gap: 6px;
+        padding: 5px 12px; border-radius: 20px;
+        font-size: 0.72rem; font-weight: 600;
+        background: rgba(16,185,129,0.2); border: 1px solid rgba(16,185,129,0.3);
+        color: #6ee7b7;
+    }
+    .results-timer {
+        background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.15);
+        border-radius: 12px; padding: 16px 18px;
+        display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 14px;
+    }
+    .timer-left { font-size: 0.88rem; color: rgba(255,255,255,0.75); line-height: 1.6; }
+    .timer-left strong { color: #fff; }
+    .timer-expiry { font-size: 0.78rem; color: rgba(255,255,255,0.45); margin-top: 2px; }
+    .export-btns { display: flex; gap: 10px; }
+    .btn-export {
+        display: inline-flex; align-items: center; gap: 7px;
+        padding: 9px 16px; border-radius: 8px;
+        text-decoration: none; font-size: 0.8rem; font-weight: 600;
+        transition: all var(--transition);
+    }
+    .btn-export-pdf {
+        background: rgba(220,38,38,0.2); border: 1px solid rgba(220,38,38,0.3);
+        color: #fca5a5;
+    }
+    .btn-export-pdf:hover { background: rgba(220,38,38,0.3); }
+    .btn-export-xlsx {
+        background: rgba(16,185,129,0.2); border: 1px solid rgba(16,185,129,0.3);
+        color: #6ee7b7;
+    }
+    .btn-export-xlsx:hover { background: rgba(16,185,129,0.3); }
+
+    /* ── SUMMARY CARDS ────────────────────────────────────── */
+    .summary-row {
+        display: grid; grid-template-columns: repeat(3,1fr);
+        gap: 18px; margin-bottom: 32px;
+        animation: fadeUp 0.5s 0.1s cubic-bezier(.4,0,.2,1) both;
+    }
+    .summary-card {
+        background: var(--card); border: 1px solid var(--border);
+        border-radius: var(--radius); padding: 22px 24px;
+        text-align: center;
+    }
+    .summary-card-num {
+        font-family: 'Playfair Display', serif;
+        font-size: 2.2rem; font-weight: 700; color: var(--ink); line-height: 1;
+    }
+    .summary-card-label { font-size: 0.8rem; color: var(--muted); margin-top: 6px; }
+
+    /* ── RESULTS LIST ─────────────────────────────────────── */
+    .results-section-title {
+        font-family: 'Playfair Display', serif;
+        font-size: 1.25rem; font-weight: 700; color: var(--ink);
+        margin-bottom: 18px;
+        display: flex; align-items: center; gap: 10px;
+        animation: fadeUp 0.5s 0.15s cubic-bezier(.4,0,.2,1) both;
+    }
+    .results-section-title::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+
+    .results-list { display: flex; flex-direction: column; gap: 14px; }
+
+    .result-item {
+        background: var(--card); border: 1.5px solid var(--border);
+        border-radius: 16px; padding: 22px 24px;
+        display: grid; grid-template-columns: 44px 1fr 200px;
+        align-items: center; gap: 20px;
+        transition: all var(--transition);
+        animation: fadeUp 0.5s cubic-bezier(.4,0,.2,1) both;
+    }
+    .result-item:nth-child(1) { animation-delay: 0.18s; }
+    .result-item:nth-child(2) { animation-delay: 0.24s; }
+    .result-item:nth-child(3) { animation-delay: 0.30s; }
+    .result-item:hover { box-shadow: 0 6px 22px rgba(0,0,0,0.06); transform: translateX(3px); }
+    .result-item.winner {
+        border-color: var(--gold);
+        background: linear-gradient(135deg, #fffdf0 0%, var(--card) 80%);
+        box-shadow: 0 4px 20px rgba(201,168,76,0.15);
+    }
+
+    .result-rank {
+        font-family: 'Playfair Display', serif;
+        font-size: 1.4rem; font-weight: 700; color: var(--muted);
+        text-align: center;
+    }
+    .winner .result-rank { color: var(--gold); }
+
+    .result-candidate { display: flex; align-items: center; gap: 14px; }
+    .result-photo {
+        width: 52px; height: 52px; object-fit: cover;
+        border-radius: 50%; border: 2px solid var(--border); flex-shrink: 0;
+    }
+    .result-photo-placeholder {
+        width: 52px; height: 52px; border-radius: 50%; flex-shrink: 0;
+        background: linear-gradient(135deg, var(--accent) 0%, #24527a 100%);
+        display: flex; align-items: center; justify-content: center;
+        font-family: 'Playfair Display', serif;
+        font-size: 1.2rem; font-weight: 700; color: #fff;
+    }
+    .result-name {
+        font-family: 'Playfair Display', serif;
+        font-size: 1rem; font-weight: 700; color: var(--ink); margin-bottom: 3px;
+    }
+    .result-party { font-size: 0.76rem; font-weight: 600; color: var(--gold); text-transform: uppercase; letter-spacing: 0.07em; }
+
+    .result-stats { text-align: right; }
+    .result-vote-count {
+        font-family: 'Playfair Display', serif;
+        font-size: 1.3rem; font-weight: 700; color: var(--ink); margin-bottom: 3px;
+    }
+    .result-pct { font-size: 0.8rem; color: var(--muted); margin-bottom: 8px; }
+    .result-bar-track {
+        height: 6px; background: var(--surface);
+        border-radius: 3px; overflow: hidden;
+    }
+    .result-bar-fill {
+        height: 100%; width: 0; border-radius: 3px;
+        background: linear-gradient(90deg, var(--accent), #24527a);
+        transition: width 1s cubic-bezier(.4,0,.2,1);
+    }
+    .winner .result-bar-fill { background: linear-gradient(90deg, var(--gold), #e8bb5e); }
+
+    /* ── ACTIONS ─────────────────────────────────────────── */
+    .results-actions {
+        display: flex; gap: 14px; margin-top: 36px;
+        padding-top: 24px; border-top: 1px solid var(--border);
+        animation: fadeUp 0.5s 0.4s cubic-bezier(.4,0,.2,1) both;
+    }
+    .btn-back {
+        display: inline-flex; align-items: center; gap: 7px;
+        padding: 12px 22px; border-radius: var(--radius);
+        text-decoration: none; font-weight: 600; font-size: 0.9rem;
+        background: var(--accent); color: #fff;
+        box-shadow: 0 4px 14px rgba(26,60,94,0.22);
+        transition: all var(--transition);
+    }
+    .btn-back:hover { background: #24527a; transform: translateY(-1px); }
+    .btn-vote-now {
+        display: inline-flex; align-items: center; gap: 7px;
+        padding: 12px 22px; border-radius: var(--radius);
+        text-decoration: none; font-weight: 500; font-size: 0.9rem;
+        background: var(--surface); border: 1.5px solid var(--border); color: var(--muted);
+        transition: all var(--transition);
+    }
+    .btn-vote-now:hover { border-color: rgba(107,114,128,0.4); color: var(--ink); }
+
+    @keyframes fadeUp { from{opacity:0;transform:translateY(14px)} to{opacity:1;transform:none} }
+
+    @media (max-width: 700px) {
+        .summary-row { grid-template-columns: 1fr 1fr; }
+        .result-item { grid-template-columns: 36px 1fr; }
+        .result-stats { display: none; }
+        .export-btns { flex-direction: column; }
+        .results-timer { flex-direction: column; }
+    }
+    @media (max-width: 480px) {
+        .summary-row { grid-template-columns: 1fr; }
+    }
+</style>
+
+<div class="results-wrap">
+    <!-- Header -->
+    <div class="results-header">
+        <div class="results-header-bg"></div>
+        <div class="results-header-inner">
+            <p class="results-eyebrow"><i class="fas fa-chart-bar"></i> Election Results</p>
+            <h1 class="results-title">{{ election.title }}</h1>
+            <div class="results-meta">
+                {% if user_voted %}
+                <span class="results-badge">✓ You voted in this election</span>
+                {% endif %}
+                {% if election.is_ongoing %}
+                <span class="results-badge" style="background:rgba(59,130,246,0.2);border-color:rgba(59,130,246,0.3);color:#93c5fd;">
+                    🔵 Ongoing
+                </span>
+                {% else %}
+                <span class="results-badge" style="background:rgba(107,114,128,0.2);border-color:rgba(107,114,128,0.3);color:#d1d5db;">
+                    Completed
+                </span>
+                {% endif %}
+            </div>
+
+            <div class="results-timer">
+                <div class="timer-left">
+                    <strong>
+                        ⏰ Results available for:
+                        {% if hours_remaining > 0 %}{{ hours_remaining }}h {% endif %}{{ minutes_remaining }}m remaining
+                    </strong>
+                    <div class="timer-expiry">Expires: {{ election.get_results_expiry_time|date:"M d, Y H:i" }}</div>
+                </div>
+                <div class="export-btns">
+                    <a href="{% url 'export_results_pdf' election.id %}" class="btn-export btn-export-pdf">
+                        <i class="fas fa-file-pdf"></i> PDF
+                    </a>
+                    <a href="{% url 'export_results_excel' election.id %}" class="btn-export btn-export-xlsx">
+                        <i class="fas fa-file-excel"></i> Excel
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Summary -->
+    <div class="summary-row">
+        <div class="summary-card">
+            <div class="summary-card-num">{{ total_votes }}</div>
+            <div class="summary-card-label">Total Votes Cast</div>
+        </div>
+        <div class="summary-card">
+            <div class="summary-card-num">{{ candidates|length }}</div>
+            <div class="summary-card-label">Candidates</div>
+        </div>
+        <div class="summary-card">
+            <div class="summary-card-num">
+                {% if election.is_ongoing %}Live{% else %}Final{% endif %}
+            </div>
+            <div class="summary-card-label">Result Status</div>
+        </div>
+    </div>
+
+    <!-- Results -->
+    <h2 class="results-section-title">Candidate Standings</h2>
+
+    <div class="results-list">
+        {% for candidate in candidates %}
+        <div class="result-item {% if forloop.first and candidate.vote_count > 0 %}winner{% endif %}">
+            <div class="result-rank">
+                {% if forloop.first and candidate.vote_count > 0 %}🏆{% else %}#{{ forloop.counter }}{% endif %}
+            </div>
+
+            <div class="result-candidate">
+                {% if candidate.photo %}
+                <img src="{{ candidate.photo.url }}" alt="{{ candidate.name }}" class="result-photo">
+                {% else %}
+                <div class="result-photo-placeholder">{{ candidate.name|slice:":1"|upper }}</div>
+                {% endif %}
+                <div>
+                    <p class="result-name">{{ candidate.name }}</p>
+                    <p class="result-party">{{ candidate.party }}</p>
+                </div>
+            </div>
+
+            <div class="result-stats">
+                <div class="result-vote-count">{{ candidate.vote_count }} vote{{ candidate.vote_count|pluralize }}</div>
+                <div class="result-pct">{{ candidate.percentage }}%</div>
+                <div class="result-bar-track">
+                    <div class="result-bar-fill" data-width="{{ candidate.percentage }}"></div>
+                </div>
+            </div>
+        </div>
+        {% empty %}
+        <p style="color:var(--muted);text-align:center;padding:32px 0;">No candidates for this election yet.</p>
+        {% endfor %}
+    </div>
+
+    <!-- Actions -->
+    <div class="results-actions">
+        <a href="{% url 'dashboard' %}" class="btn-back">
+            <i class="fas fa-arrow-left"></i> Back to Dashboard
+        </a>
+        {% if not user_voted and election.is_ongoing %}
+        <a href="{% url 'vote' election.id %}" class="btn-vote-now">
+            <i class="fas fa-vote-yea"></i> Cast Your Vote
+        </a>
+        {% endif %}
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const bars = document.querySelectorAll('.result-bar-fill');
+    setTimeout(() => {
+        bars.forEach(bar => {
+            bar.style.width = bar.getAttribute('data-width') + '%';
+        });
+    }, 200);
+});
+</script>
+{% endblock %}

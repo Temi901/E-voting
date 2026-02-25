@@ -1,0 +1,413 @@
+{% extends 'voting/base.html' %}
+
+{% block title %}Home - E-Voting System{% endblock %}
+
+{% block content %}
+<style>
+    :root {
+        --ink: #0d0f14; --surface: #f5f4f0; --card: #ffffff;
+        --accent: #1a3c5e; --gold: #c9a84c; --gold-light: #f0d98c;
+        --muted: #6b7280; --border: #e2ddd6; --radius: 12px;
+        --transition: 0.28s cubic-bezier(.4,0,.2,1);
+    }
+
+    /* ── HERO ─────────────────────────────────────────────── */
+    .hero {
+        position: relative;
+        overflow: hidden;
+        padding: 110px 0 100px;
+        background: var(--accent);
+    }
+    .hero-bg {
+        position: absolute; inset: 0;
+        background:
+            radial-gradient(ellipse 80% 60% at 20% 50%, rgba(201,168,76,0.12) 0%, transparent 60%),
+            radial-gradient(ellipse 60% 80% at 80% 30%, rgba(255,255,255,0.04) 0%, transparent 50%),
+            linear-gradient(150deg, #0d1f33 0%, #1a3c5e 50%, #24527a 100%);
+    }
+    /* Decorative dots grid */
+    .hero-bg::after {
+        content: '';
+        position: absolute; inset: 0;
+        background-image: radial-gradient(circle, rgba(255,255,255,0.06) 1px, transparent 1px);
+        background-size: 36px 36px;
+    }
+    .hero-content {
+        position: relative; z-index: 2;
+        max-width: 1200px; margin: 0 auto; padding: 0 28px;
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 60px;
+        align-items: center;
+    }
+    .hero-left { animation: heroLeft 0.8s cubic-bezier(.4,0,.2,1) both; }
+    .hero-eyebrow {
+        display: inline-flex; align-items: center; gap: 8px;
+        padding: 6px 14px; border-radius: 20px;
+        background: rgba(201,168,76,0.15);
+        border: 1px solid rgba(201,168,76,0.3);
+        color: var(--gold-light);
+        font-size: 0.75rem; font-weight: 600;
+        letter-spacing: 0.1em; text-transform: uppercase;
+        margin-bottom: 24px;
+    }
+    .hero-eyebrow i { font-size: 0.7rem; }
+    .hero h1 {
+        font-family: 'Playfair Display', serif;
+        font-size: 3.6rem; font-weight: 700; line-height: 1.1;
+        color: #ffffff; margin-bottom: 22px; letter-spacing: -0.02em;
+    }
+    .hero h1 .gold { color: var(--gold); }
+    .hero-desc {
+        font-size: 1.05rem; line-height: 1.7;
+        color: rgba(255,255,255,0.65); margin-bottom: 36px;
+    }
+    .hero-btns { display: flex; gap: 14px; flex-wrap: wrap; }
+    .btn-hero-primary {
+        display: inline-flex; align-items: center; gap: 8px;
+        padding: 14px 28px; border-radius: 10px;
+        background: var(--gold);
+        color: var(--ink); font-weight: 600; font-size: 0.95rem;
+        text-decoration: none;
+        box-shadow: 0 6px 20px rgba(201,168,76,0.35);
+        transition: all var(--transition);
+    }
+    .btn-hero-primary:hover { background: var(--gold-light); transform: translateY(-2px); box-shadow: 0 10px 28px rgba(201,168,76,0.45); }
+    .btn-hero-secondary {
+        display: inline-flex; align-items: center; gap: 8px;
+        padding: 14px 28px; border-radius: 10px;
+        background: rgba(255,255,255,0.1);
+        border: 1px solid rgba(255,255,255,0.25);
+        color: #fff; font-weight: 500; font-size: 0.95rem;
+        text-decoration: none;
+        transition: all var(--transition);
+    }
+    .btn-hero-secondary:hover { background: rgba(255,255,255,0.18); transform: translateY(-2px); }
+
+    /* Hero right: trust card */
+    .hero-right { animation: heroRight 0.8s 0.15s cubic-bezier(.4,0,.2,1) both; }
+    .trust-card {
+        background: rgba(255,255,255,0.06);
+        border: 1px solid rgba(255,255,255,0.12);
+        border-radius: 20px; padding: 32px;
+        backdrop-filter: blur(12px);
+    }
+    .trust-card-title {
+        font-size: 0.7rem; font-weight: 600; letter-spacing: 0.12em;
+        text-transform: uppercase; color: var(--gold); margin-bottom: 20px;
+    }
+    .trust-stat {
+        display: flex; align-items: center; gap: 16px;
+        padding: 16px 0;
+        border-bottom: 1px solid rgba(255,255,255,0.08);
+    }
+    .trust-stat:last-child { border-bottom: none; }
+    .trust-stat-icon {
+        width: 42px; height: 42px; border-radius: 10px; flex-shrink: 0;
+        background: rgba(201,168,76,0.15);
+        display: flex; align-items: center; justify-content: center;
+        font-size: 1.1rem;
+    }
+    .trust-stat-label { font-size: 0.78rem; color: rgba(255,255,255,0.45); margin-bottom: 2px; }
+    .trust-stat-value { font-size: 1.1rem; font-weight: 600; color: #fff; }
+
+    /* Hero stats strip */
+    .hero-stats-strip {
+        position: relative; z-index: 2;
+        max-width: 1200px; margin: 50px auto 0; padding: 0 28px;
+        display: grid; grid-template-columns: repeat(4, 1fr);
+        gap: 1px; background: rgba(255,255,255,0.1);
+        border-radius: 14px; overflow: hidden;
+    }
+    .hero-stat {
+        background: rgba(255,255,255,0.06);
+        padding: 22px 28px; text-align: center;
+        transition: background var(--transition);
+    }
+    .hero-stat:hover { background: rgba(255,255,255,0.1); }
+    .hero-stat-num {
+        font-family: 'Playfair Display', serif;
+        font-size: 2rem; font-weight: 700; color: var(--gold);
+    }
+    .hero-stat-lbl { font-size: 0.78rem; color: rgba(255,255,255,0.5); margin-top: 4px; }
+
+    /* ── FEATURES ─────────────────────────────────────────── */
+    .section { padding: 96px 0; }
+    .section-inner { max-width: 1200px; margin: 0 auto; padding: 0 28px; }
+    .section-label {
+        display: inline-block; font-size: 0.72rem; font-weight: 600;
+        letter-spacing: 0.12em; text-transform: uppercase;
+        color: var(--gold); margin-bottom: 12px;
+    }
+    .section-title {
+        font-family: 'Playfair Display', serif;
+        font-size: 2.4rem; font-weight: 700; color: var(--ink);
+        letter-spacing: -0.02em; margin-bottom: 16px;
+    }
+    .section-desc { color: var(--muted); font-size: 1rem; line-height: 1.7; max-width: 520px; }
+
+    .features-grid {
+        display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px;
+        margin-top: 56px;
+    }
+    .feature-card {
+        background: var(--card); border: 1px solid var(--border);
+        border-radius: 16px; padding: 30px 24px;
+        transition: all var(--transition);
+    }
+    .feature-card:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 16px 40px rgba(26,60,94,0.1);
+        border-color: rgba(26,60,94,0.2);
+    }
+    .feature-icon-wrap {
+        width: 48px; height: 48px; border-radius: 12px;
+        background: linear-gradient(135deg, #e8f0f9 0%, #d4e4f4 100%);
+        display: flex; align-items: center; justify-content: center;
+        font-size: 1.3rem; margin-bottom: 18px;
+    }
+    .feature-card h3 {
+        font-family: 'Playfair Display', serif;
+        font-size: 1.1rem; font-weight: 700; color: var(--ink);
+        margin-bottom: 10px;
+    }
+    .feature-card p { color: var(--muted); font-size: 0.88rem; line-height: 1.65; }
+
+    /* ── ACTIVE ELECTIONS ─────────────────────────────────── */
+    .elections-section { background: var(--ink); padding: 96px 0; }
+    .elections-section .section-title { color: #fff; }
+    .elections-section .section-label { color: var(--gold); }
+    .elections-section .section-desc { color: rgba(255,255,255,0.5); }
+
+    .elections-grid {
+        display: grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+        gap: 24px; margin-top: 48px;
+    }
+    .election-card {
+        background: rgba(255,255,255,0.05);
+        border: 1px solid rgba(255,255,255,0.1);
+        border-radius: 16px; padding: 28px;
+        transition: all var(--transition);
+    }
+    .election-card:hover {
+        background: rgba(255,255,255,0.08);
+        border-color: rgba(201,168,76,0.3);
+        transform: translateY(-3px);
+    }
+    .election-card-tag {
+        display: inline-flex; align-items: center; gap: 6px;
+        padding: 4px 12px; border-radius: 20px;
+        background: rgba(16,185,129,0.15);
+        border: 1px solid rgba(16,185,129,0.3);
+        color: #6ee7b7; font-size: 0.72rem; font-weight: 600;
+        letter-spacing: 0.08em; text-transform: uppercase;
+        margin-bottom: 16px;
+    }
+    .election-card-tag::before {
+        content: ''; width: 6px; height: 6px; border-radius: 50%;
+        background: #10b981;
+        box-shadow: 0 0 6px #10b981;
+        animation: pulse 2s infinite;
+    }
+    @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.4} }
+
+    .election-card h3 {
+        font-family: 'Playfair Display', serif;
+        font-size: 1.25rem; font-weight: 700; color: #fff;
+        margin-bottom: 10px;
+    }
+    .election-card > p { color: rgba(255,255,255,0.5); font-size: 0.88rem; line-height: 1.65; margin-bottom: 20px; }
+    .election-dates {
+        background: rgba(255,255,255,0.06); border-radius: 10px;
+        padding: 14px 16px; margin-bottom: 22px;
+        border-left: 3px solid var(--gold);
+    }
+    .election-dates p {
+        color: rgba(255,255,255,0.55); font-size: 0.82rem; margin: 4px 0;
+    }
+    .election-dates strong { color: rgba(255,255,255,0.8); }
+    .btn-election {
+        display: flex; align-items: center; justify-content: center; gap: 8px;
+        width: 100%; padding: 13px; border-radius: 10px;
+        text-decoration: none; font-weight: 600; font-size: 0.9rem;
+        transition: all var(--transition);
+    }
+    .btn-election-primary {
+        background: var(--gold); color: var(--ink);
+        box-shadow: 0 4px 14px rgba(201,168,76,0.3);
+    }
+    .btn-election-primary:hover { background: var(--gold-light); transform: translateY(-1px); }
+    .btn-election-ghost {
+        background: rgba(255,255,255,0.08);
+        border: 1px solid rgba(255,255,255,0.15);
+        color: rgba(255,255,255,0.7);
+    }
+    .btn-election-ghost:hover { background: rgba(255,255,255,0.14); }
+
+    /* ── ANIMATIONS ───────────────────────────────────────── */
+    @keyframes heroLeft { from{opacity:0;transform:translateX(-30px)} to{opacity:1;transform:none} }
+    @keyframes heroRight { from{opacity:0;transform:translateX(30px)} to{opacity:1;transform:none} }
+
+    @media (max-width: 900px) {
+        .hero-content { grid-template-columns: 1fr; gap: 40px; }
+        .hero h1 { font-size: 2.6rem; }
+        .hero-stats-strip { grid-template-columns: repeat(2,1fr); }
+        .features-grid { grid-template-columns: repeat(2,1fr); }
+        .hero-right { display: none; }
+    }
+    @media (max-width: 600px) {
+        .hero { padding: 70px 0 60px; }
+        .hero h1 { font-size: 2rem; }
+        .features-grid { grid-template-columns: 1fr; }
+        .hero-stats-strip { grid-template-columns: repeat(2,1fr); }
+    }
+</style>
+
+<!-- ── HERO ───────────────────────────────────────────────────── -->
+<section class="hero">
+    <div class="hero-bg"></div>
+    <div class="hero-content">
+        <div class="hero-left">
+            <span class="hero-eyebrow"><i class="fas fa-shield-alt"></i> Trusted Digital Democracy</span>
+            <h1>Vote with <span class="gold">Confidence</span> & Clarity</h1>
+            <p class="hero-desc">
+                A secure, transparent online voting platform built to empower communities.
+                Every ballot encrypted. Every voice counted. Every result verifiable.
+            </p>
+            <div class="hero-btns">
+                {% if not user.is_authenticated %}
+                <a href="{% url 'register' %}" class="btn-hero-primary">
+                    <i class="fas fa-user-plus"></i> Register to Vote
+                </a>
+                <a href="{% url 'login' %}" class="btn-hero-secondary">
+                    <i class="fas fa-sign-in-alt"></i> Sign In
+                </a>
+                {% else %}
+                <a href="{% url 'dashboard' %}" class="btn-hero-primary">
+                    <i class="fas fa-th-large"></i> Go to Dashboard
+                </a>
+                {% endif %}
+            </div>
+        </div>
+
+        <div class="hero-right">
+            <div class="trust-card">
+                <p class="trust-card-title">System Integrity</p>
+                <div class="trust-stat">
+                    <div class="trust-stat-icon">🔒</div>
+                    <div>
+                        <p class="trust-stat-label">Security Protocol</p>
+                        <p class="trust-stat-value">End-to-End Encrypted</p>
+                    </div>
+                </div>
+                <div class="trust-stat">
+                    <div class="trust-stat-icon">✅</div>
+                    <div>
+                        <p class="trust-stat-label">Voter Verification</p>
+                        <p class="trust-stat-value">ID-Authenticated</p>
+                    </div>
+                </div>
+                <div class="trust-stat">
+                    <div class="trust-stat-icon">📊</div>
+                    <div>
+                        <p class="trust-stat-label">Results</p>
+                        <p class="trust-stat-value">Tamper-Proof Audit Trail</p>
+                    </div>
+                </div>
+                <div class="trust-stat">
+                    <div class="trust-stat-icon">⚡</div>
+                    <div>
+                        <p class="trust-stat-label">Availability</p>
+                        <p class="trust-stat-value">99.9% Uptime SLA</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="hero-stats-strip">
+        <div class="hero-stat">
+            <div class="hero-stat-num">256-bit</div>
+            <div class="hero-stat-lbl">Encryption Standard</div>
+        </div>
+        <div class="hero-stat">
+            <div class="hero-stat-num">1-Vote</div>
+            <div class="hero-stat-lbl">Verified Per Citizen</div>
+        </div>
+        <div class="hero-stat">
+            <div class="hero-stat-num">Real-Time</div>
+            <div class="hero-stat-lbl">Result Transparency</div>
+        </div>
+        <div class="hero-stat">
+            <div class="hero-stat-num">100%</div>
+            <div class="hero-stat-lbl">Audit Ready</div>
+        </div>
+    </div>
+</section>
+
+<!-- ── FEATURES ───────────────────────────────────────────────── -->
+<section class="section">
+    <div class="section-inner">
+        <span class="section-label">Why E-Voting?</span>
+        <h2 class="section-title">Built for trust, designed for everyone</h2>
+        <p class="section-desc">Our platform combines military-grade security with a simple, accessible experience so every eligible voter can participate.</p>
+
+        <div class="features-grid">
+            <div class="feature-card">
+                <div class="feature-icon-wrap">🔒</div>
+                <h3>Secure</h3>
+                <p>Your vote is encrypted and protected with state-of-the-art security measures from submission to final tally.</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon-wrap">⚡</div>
+                <h3>Fast</h3>
+                <p>Cast your vote in seconds from anywhere, anytime during the election period — no queues, no delays.</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon-wrap">📊</div>
+                <h3>Transparent</h3>
+                <p>Real-time results and complete transparency in the voting process, accessible to all verified participants.</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon-wrap">✅</div>
+                <h3>Verified</h3>
+                <p>Every voter is identity-verified to ensure one person, one vote — the cornerstone of democratic integrity.</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ── ACTIVE ELECTIONS ───────────────────────────────────────── -->
+{% if elections %}
+<section class="elections-section">
+    <div class="section-inner">
+        <span class="section-label">Now Open</span>
+        <h2 class="section-title">Active Elections</h2>
+        <p class="section-desc">These elections are currently open for eligible voters. Log in to cast your vote.</p>
+
+        <div class="elections-grid">
+            {% for election in elections %}
+            <div class="election-card">
+                <span class="election-card-tag">Live Now</span>
+                <h3>{{ election.title }}</h3>
+                <p>{{ election.description|truncatewords:20 }}</p>
+                <div class="election-dates">
+                    <p><strong>📅 Start:</strong> {{ election.start_date|date:"M d, Y H:i" }}</p>
+                    <p><strong>⏰ End:</strong> {{ election.end_date|date:"M d, Y H:i" }}</p>
+                </div>
+                {% if user.is_authenticated %}
+                <a href="{% url 'vote' election.id %}" class="btn-election btn-election-primary">
+                    <i class="fas fa-vote-yea"></i> Vote Now
+                </a>
+                {% else %}
+                <a href="{% url 'login' %}" class="btn-election btn-election-ghost">
+                    <i class="fas fa-sign-in-alt"></i> Login to Vote
+                </a>
+                {% endif %}
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+{% endif %}
+{% endblock %}

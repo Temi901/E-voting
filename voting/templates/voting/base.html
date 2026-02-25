@@ -1,0 +1,483 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}E-Voting System{% endblock %}</title>
+    
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+
+    <style>
+        :root {
+            --ink:        #0d0f14;
+            --surface:    #f5f4f0;
+            --card:       #ffffff;
+            --accent:     #1a3c5e;
+            --gold:       #c9a84c;
+            --gold-light: #f0d98c;
+            --muted:      #6b7280;
+            --border:     #e2ddd6;
+            --success:    #155e3e;
+            --danger:     #8b1a1a;
+            --warning:    #78500a;
+            --info:       #1a3660;
+            --radius:     12px;
+            --nav-h:      72px;
+            --transition: 0.28s cubic-bezier(.4,0,.2,1);
+        }
+
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+        html {
+            background: var(--surface);
+            scroll-behavior: smooth;
+        }
+
+        body {
+            font-family: 'DM Sans', sans-serif;
+            font-weight: 400;
+            color: var(--ink);
+            background: var(--surface);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            /* Subtle grain texture */
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='300' height='300' filter='url(%23n)' opacity='0.03'/%3E%3C/svg%3E");
+        }
+
+        /* ─── NAVBAR ─────────────────────────────────────────── */
+        .navbar {
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            height: var(--nav-h);
+            background: var(--card);
+            border-bottom: 1px solid var(--border);
+            box-shadow: 0 2px 20px rgba(0,0,0,0.06);
+        }
+
+        .navbar .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 28px;
+            height: 100%;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        /* Brand */
+        .nav-brand a {
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            color: var(--ink);
+            transition: opacity var(--transition);
+        }
+        .nav-brand a:hover { opacity: 0.75; }
+
+        .brand-icon {
+            width: 40px;
+            height: 40px;
+            background: linear-gradient(135deg, var(--accent) 0%, #24527a 100%);
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.1rem;
+            box-shadow: 0 4px 12px rgba(26,60,94,0.25);
+        }
+
+        .brand-text {
+            display: flex;
+            flex-direction: column;
+            line-height: 1.1;
+        }
+        .brand-name {
+            font-family: 'Playfair Display', serif;
+            font-size: 1.15rem;
+            font-weight: 700;
+            color: var(--ink);
+            letter-spacing: -0.02em;
+        }
+        .brand-tagline {
+            font-size: 0.65rem;
+            font-weight: 500;
+            color: var(--gold);
+            letter-spacing: 0.12em;
+            text-transform: uppercase;
+        }
+
+        /* Nav links */
+        .nav-menu {
+            list-style: none;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .nav-menu li a {
+            display: flex;
+            align-items: center;
+            gap: 7px;
+            padding: 9px 18px;
+            border-radius: 8px;
+            text-decoration: none;
+            font-size: 0.875rem;
+            font-weight: 500;
+            color: var(--muted);
+            border: 1px solid transparent;
+            transition: all var(--transition);
+            white-space: nowrap;
+        }
+        .nav-menu li a i { font-size: 0.8rem; }
+
+        .nav-menu li a:hover {
+            color: var(--accent);
+            background: rgba(26,60,94,0.06);
+            border-color: rgba(26,60,94,0.12);
+        }
+
+        /* Primary CTA nav item */
+        .nav-menu li.nav-cta a {
+            background: var(--accent);
+            color: #fff;
+            border-color: var(--accent);
+            box-shadow: 0 4px 12px rgba(26,60,94,0.2);
+        }
+        .nav-menu li.nav-cta a:hover {
+            background: #24527a;
+            border-color: #24527a;
+            transform: translateY(-1px);
+            box-shadow: 0 6px 18px rgba(26,60,94,0.28);
+        }
+
+        /* Gold accent nav item */
+        .nav-menu li.nav-accent a {
+            color: var(--gold);
+            border-color: rgba(201,168,76,0.25);
+            background: rgba(201,168,76,0.06);
+        }
+        .nav-menu li.nav-accent a:hover {
+            background: rgba(201,168,76,0.12);
+            border-color: rgba(201,168,76,0.4);
+        }
+
+        /* Divider pill */
+        .nav-divider {
+            width: 1px;
+            height: 22px;
+            background: var(--border);
+            margin: 0 6px;
+        }
+
+        /* ─── MESSAGES ───────────────────────────────────────── */
+        .messages-container {
+            max-width: 1200px;
+            margin: 24px auto 0;
+            padding: 0 28px;
+        }
+
+        .alert {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            padding: 14px 18px;
+            border-radius: var(--radius);
+            margin-bottom: 12px;
+            font-size: 0.9rem;
+            font-weight: 500;
+            border: 1px solid transparent;
+            animation: alertIn 0.4s cubic-bezier(.4,0,.2,1) both;
+        }
+
+        .alert-icon {
+            width: 32px;
+            height: 32px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.9rem;
+            flex-shrink: 0;
+        }
+
+        .alert-success  { background: #f0fdf6; color: var(--success); border-color: #bbf7d0; }
+        .alert-success  .alert-icon { background: #d1fae5; }
+        .alert-danger   { background: #fff5f5; color: var(--danger);  border-color: #fecaca; }
+        .alert-danger   .alert-icon { background: #fee2e2; }
+        .alert-warning  { background: #fffbeb; color: var(--warning); border-color: #fde68a; }
+        .alert-warning  .alert-icon { background: #fef3c7; }
+        .alert-info     { background: #eff6ff; color: var(--info);    border-color: #bfdbfe; }
+        .alert-info     .alert-icon { background: #dbeafe; }
+
+        @keyframes alertIn {
+            from { opacity: 0; transform: translateY(-10px); }
+            to   { opacity: 1; transform: translateY(0); }
+        }
+
+        /* ─── MAIN ───────────────────────────────────────────── */
+        main { flex: 1; }
+
+        /* ─── FOOTER ─────────────────────────────────────────── */
+        .footer {
+            margin-top: 80px;
+            background: var(--ink);
+            color: rgba(255,255,255,0.85);
+        }
+
+        .footer-inner {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 48px 28px 36px;
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            gap: 40px;
+            flex-wrap: wrap;
+        }
+
+        .footer-brand {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .footer-brand-icon {
+            width: 36px;
+            height: 36px;
+            background: linear-gradient(135deg, var(--accent) 0%, #24527a 100%);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1rem;
+        }
+        .footer-brand-name {
+            font-family: 'Playfair Display', serif;
+            font-size: 1.05rem;
+            font-weight: 700;
+            color: #fff;
+        }
+
+        .footer-tagline {
+            margin-top: 12px;
+            font-size: 0.8rem;
+            color: rgba(255,255,255,0.45);
+            line-height: 1.6;
+            max-width: 220px;
+        }
+
+        .footer-badges {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            margin-top: 20px;
+        }
+        .footer-badge {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            padding: 5px 12px;
+            border-radius: 20px;
+            background: rgba(255,255,255,0.06);
+            border: 1px solid rgba(255,255,255,0.1);
+            font-size: 0.72rem;
+            font-weight: 500;
+            color: rgba(255,255,255,0.6);
+            letter-spacing: 0.04em;
+        }
+        .footer-badge i { color: var(--gold); font-size: 0.65rem; }
+
+        .footer-divider {
+            height: 1px;
+            background: rgba(255,255,255,0.08);
+            max-width: 1200px;
+            margin: 0 28px;
+        }
+
+        .footer-bottom {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px 28px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+        .footer-copy {
+            font-size: 0.78rem;
+            color: rgba(255,255,255,0.35);
+        }
+        .footer-gold-line {
+            height: 3px;
+            background: linear-gradient(90deg, var(--accent), var(--gold), var(--accent));
+            background-size: 200% 100%;
+            animation: shimmer 4s linear infinite;
+        }
+        @keyframes shimmer {
+            0%   { background-position: 200% 0; }
+            100% { background-position: -200% 0; }
+        }
+
+        /* ─── RESPONSIVE ─────────────────────────────────────── */
+        @media (max-width: 768px) {
+            .navbar { height: auto; padding: 14px 0; }
+            .navbar .container { flex-direction: column; gap: 14px; padding: 0 20px; }
+            .nav-menu { flex-wrap: wrap; justify-content: center; gap: 5px; }
+            .nav-menu li a { padding: 8px 14px; font-size: 0.82rem; }
+            .nav-divider { display: none; }
+            .brand-tagline { display: none; }
+            .footer-inner { flex-direction: column; gap: 24px; }
+            .footer-bottom { flex-direction: column; text-align: center; }
+        }
+    </style>
+
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="/static/voting/css/style.css">
+</head>
+<body>
+
+    <!-- ── NAVBAR ───────────────────────────────────────────── -->
+    <nav class="navbar">
+        <div class="container">
+            <!-- Brand -->
+            <div class="nav-brand">
+                <a href="{% url 'index' %}">
+                    <span class="brand-icon">🗳️</span>
+                    <span class="brand-text">
+                        <span class="brand-name">E-Voting</span>
+                        <span class="brand-tagline">Secure · Transparent</span>
+                    </span>
+                </a>
+            </div>
+
+            <!-- Links -->
+            <ul class="nav-menu">
+                {% if user.is_authenticated %}
+                    <li>
+                        <a href="{% url 'dashboard' %}">
+                            <i class="fas fa-th-large"></i> Dashboard
+                        </a>
+                    </li>
+                    {% if user.is_staff %}
+                        <li>
+                            <a href="{% url 'admin_dashboard' %}">
+                                <i class="fas fa-chart-line"></i> Admin
+                            </a>
+                        </li>
+                    {% endif %}
+                    <span class="nav-divider"></span>
+                    <li class="nav-accent">
+                        <a href="{% url 'logout' %}">
+                            <i class="fas fa-sign-out-alt"></i> {{ user.username }}
+                        </a>
+                    </li>
+                {% else %}
+                    <li>
+                        <a href="{% url 'index' %}">
+                            <i class="fas fa-home"></i> Home
+                        </a>
+                    </li>
+                    <li>
+                        <a href="{% url 'login' %}">
+                            <i class="fas fa-sign-in-alt"></i> Login
+                        </a>
+                    </li>
+                    <span class="nav-divider"></span>
+                    <li class="nav-cta">
+                        <a href="{% url 'register' %}">
+                            <i class="fas fa-user-plus"></i> Register
+                        </a>
+                    </li>
+                {% endif %}
+            </ul>
+        </div>
+    </nav>
+
+    <!-- ── MESSAGES ─────────────────────────────────────────── -->
+    {% if messages %}
+    <div class="messages-container">
+        {% for message in messages %}
+        <div class="alert alert-{{ message.tags }}">
+            <span class="alert-icon">
+                {% if message.tags == 'success' %}✅
+                {% elif message.tags == 'danger' %}❌
+                {% elif message.tags == 'warning' %}⚠️
+                {% else %}ℹ️{% endif %}
+            </span>
+            {{ message }}
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    <!-- ── CONTENT ───────────────────────────────────────────── -->
+    <main>
+        {% block content %}
+        {% endblock %}
+    </main>
+
+    <!-- ── FOOTER ────────────────────────────────────────────── -->
+    <footer class="footer">
+        <div class="footer-gold-line"></div>
+        <div class="footer-inner">
+            <!-- Left -->
+            <div>
+                <div class="footer-brand">
+                    <span class="footer-brand-icon">🗳️</span>
+                    <span class="footer-brand-name">E-Voting System</span>
+                </div>
+                <p class="footer-tagline">
+                    A secure, transparent, and democratic digital voting platform built for modern governance.
+                </p>
+                <div class="footer-badges">
+                    <span class="footer-badge"><i class="fas fa-shield-alt"></i> Encrypted</span>
+                    <span class="footer-badge"><i class="fas fa-eye"></i> Transparent</span>
+                    <span class="footer-badge"><i class="fas fa-lock"></i> Secure</span>
+                </div>
+            </div>
+
+            <!-- Right: quick links -->
+            <div>
+                <p style="font-size:0.7rem;font-weight:600;letter-spacing:0.1em;text-transform:uppercase;color:rgba(255,255,255,0.35);margin-bottom:14px;">Quick Access</p>
+                <div style="display:flex;flex-direction:column;gap:10px;">
+                    {% if user.is_authenticated %}
+                    <a href="{% url 'dashboard' %}" style="color:rgba(255,255,255,0.55);text-decoration:none;font-size:0.84rem;display:flex;align-items:center;gap:8px;transition:color .2s;" onmouseover="this.style.color='#c9a84c'" onmouseout="this.style.color='rgba(255,255,255,0.55)'">
+                        <i class="fas fa-th-large" style="font-size:0.72rem;width:14px;"></i> Dashboard
+                    </a>
+                    <a href="{% url 'logout' %}" style="color:rgba(255,255,255,0.55);text-decoration:none;font-size:0.84rem;display:flex;align-items:center;gap:8px;transition:color .2s;" onmouseover="this.style.color='#c9a84c'" onmouseout="this.style.color='rgba(255,255,255,0.55)'">
+                        <i class="fas fa-sign-out-alt" style="font-size:0.72rem;width:14px;"></i> Logout
+                    </a>
+                    {% else %}
+                    <a href="{% url 'login' %}" style="color:rgba(255,255,255,0.55);text-decoration:none;font-size:0.84rem;display:flex;align-items:center;gap:8px;transition:color .2s;" onmouseover="this.style.color='#c9a84c'" onmouseout="this.style.color='rgba(255,255,255,0.55)'">
+                        <i class="fas fa-sign-in-alt" style="font-size:0.72rem;width:14px;"></i> Login
+                    </a>
+                    <a href="{% url 'register' %}" style="color:rgba(255,255,255,0.55);text-decoration:none;font-size:0.84rem;display:flex;align-items:center;gap:8px;transition:color .2s;" onmouseover="this.style.color='#c9a84c'" onmouseout="this.style.color='rgba(255,255,255,0.55)'">
+                        <i class="fas fa-user-plus" style="font-size:0.72rem;width:14px;"></i> Register
+                    </a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <div class="footer-divider"></div>
+
+        <div class="footer-bottom">
+            <p class="footer-copy">© 2026 E-Voting System. All rights reserved.</p>
+            <p class="footer-copy">Your vote. Your voice. Protected.</p>
+        </div>
+    </footer>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
