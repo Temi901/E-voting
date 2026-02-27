@@ -16,7 +16,6 @@ def index(request):
     """Homepage view"""
     elections = Election.objects.filter(is_active=True).order_by('-start_date')[:3]
     return render(request, 'voting/index.html', {'elections': elections})
-
 def register_view(request):
     """Voter registration view"""
     if request.method == 'POST':
@@ -30,9 +29,7 @@ def register_view(request):
             messages.error(request, 'Registration failed. Please correct the errors.')
     else:
         form = VoterRegistrationForm()
-    
     return render(request, 'voting/register.html', {'form': form})
-
 def login_view(request):
     """User login view"""
     if request.method == 'POST':
