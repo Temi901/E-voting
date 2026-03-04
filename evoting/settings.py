@@ -25,7 +25,7 @@ SECRET_KEY = 'django-insecure-r(#j0rb!hdg@!8a$st@q2w9muam9w((88(+cp^*gq@8+alj_op
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['Temitope19.pythonanywhere.com', 'localhost', '127.0.0.1']
 
 
 # Application definition
@@ -119,9 +119,9 @@ USE_TZ = True
 
 STATIC_URL = '/static/'
 STATIC_ROOT = BASE_DIR / 'staticfiles'
-STATICFILES_DIRS = [
-    BASE_DIR / 'static',
-]
+#STATICFILES_DIRS = [
+ #   BASE_DIR / 'static',
+#]
 
 # Media files configuration
 MEDIA_URL = '/media/'
@@ -159,4 +159,11 @@ EMAIL_HOST_PASSWORD = 'nqpk snrj ioki hdqe'
 DEFAULT_FROM_EMAIL = 'jejetemmy8@gmail.com'
 
 # Site URL (for email links)
-SITE_URL = 'http://127.0.0.1:8000'
+SITE_URL = 'https://Temitope19.pythonanywhere.com'
+
+# Static and Media files
+STATIC_URL = '/static/'
+STATIC_ROOT = '/home/Temitope19/E-voting/static'
+
+MEDIA_URL = '/media/'
+MEDIA_ROOT = '/home/Temitope19/E-voting/media'

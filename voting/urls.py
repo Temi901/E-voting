@@ -12,4 +12,7 @@ urlpatterns = [
     path('results/<int:election_id>/export/pdf/', views.export_results_pdf, name='export_results_pdf'),
     path('results/<int:election_id>/export/excel/', views.export_results_excel, name='export_results_excel'),
     path('admin-dashboard/', views.admin_dashboard, name='admin_dashboard'),
+    path('verify-email/<uidb64>/<token>/', views.verify_email, name='verify_email'),
+    path('forgot-password/', views.forgot_password, name='forgot_password'),
+    path('reset-password/<uidb64>/<token>/', views.reset_password, name='reset_password'),
 ]

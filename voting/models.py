@@ -10,7 +10,10 @@ class Voter(models.Model):
     date_of_birth = models.DateField()
     has_voted = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
-
+	# Email verification fields
+    email_verified = models.BooleanField(default=False)
+    verification_token = models.CharField(max_length=100, blank=True, null=True)
+    token_created_at = models.DateTimeField(null=True, blank=True)
     def __str__(self):
         return f"{self.user.username} - {self.voter_id}"
 

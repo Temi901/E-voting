@@ -1,5 +1,6 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth import login, authenticate, logout
+from django.contrib.auth.models import User
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.db.models import Count
@@ -9,7 +10,7 @@ from .forms import VoterRegistrationForm, LoginForm
 from django.http import HttpResponse
 from .export_utils import generate_results_pdf, generate_results_excel
 from django.contrib.admin.views.decorators import staff_member_required
-from django.db.models import Count
+
 
 
 def index(request):
@@ -17,18 +18,32 @@ def index(request):
     elections = Election.objects.filter(is_active=True).order_by('-start_date')[:3]
     return render(request, 'voting/index.html', {'elections': elections})
 def register_view(request):
-    """Voter registration view"""
+    """Voter registration view with email verification"""
     if request.method == 'POST':
         form = VoterRegistrationForm(request.POST)
         if form.is_valid():
             user = form.save()
-            login(request, user)
-            messages.success(request, 'Registration successful! Welcome to E-Voting.')
-            return redirect('dashboard')
+            
+            # Send verification email
+            try:
+                from .email_utils import send_verification_email
+                send_verification_email(user, request)
+                messages.success(
+                    request, 
+                    'Registration successful! Please check your email to verify your account before logging in.'
+                )
+            except Exception as e:
+                messages.warning(
+                    request,
+                    f'Account created but verification email failed to send. Please contact support. Error: {str(e)}'
+                )
+            
+            return redirect('login')
         else:
-            messages.error(request, 'Registration failed. Please correct the errors.')
+            messages.error(request, 'Registration failed. Please correct the errors below.')
     else:
         form = VoterRegistrationForm()
+    
     return render(request, 'voting/register.html', {'form': form})
 def login_view(request):
     """User login view"""
@@ -148,6 +163,15 @@ def vote_view(request, election_id):
         voter.save()
         
         messages.success(request, f'Your vote for {candidate.name} has been recorded successfully!')
+        
+        # Send vote confirmation email
+        try:
+            from .email_utils import send_vote_confirmation_email
+            send_vote_confirmation_email(request.user, election, candidate)
+        except Exception as e:
+            # Don't fail the vote if email fails
+            print(f"Failed to send vote confirmation email: {e}")
+        
         return redirect("dashboard")
     
     context = {
@@ -362,4 +386,94 @@ def admin_dashboard(request):
         'election_data': election_data,
     }
     
+def verify_email(request, uidb64, token):
+    """Verify user email address"""
+    from django.contrib.auth.tokens import default_token_generator
+    from django.utils.http import urlsafe_base64_decode
+    from django.utils.encoding import force_str
+    
+    try:
+        uid = force_str(urlsafe_base64_decode(uidb64))
+        user = User.objects.get(pk=uid)
+    except (TypeError, ValueError, OverflowError, User.DoesNotExist):
+        user = None
+    
+    if user is not None and default_token_generator.check_token(user, token):
+        user.is_active = True
+        user.save()
+        
+        # Update voter email_verified status
+        voter = Voter.objects.get(user=user)
+        voter.email_verified = True
+        voter.save()
+        
+        messages.success(request, 'Email verified successfully! You can now log in.')
+        return redirect('login')
+    else:
+        messages.error(request, 'Verification link is invalid or has expired.')
+        return redirect('register')
+
+def forgot_password(request):
+    """Forgot password view - sends reset email"""
+    if request.method == 'POST':
+        email = request.POST.get('email')
+        try:
+            # Get the first user with this email (in case of duplicates)
+            user = User.objects.filter(email=email).first()
+            
+            if user:
+                from .email_utils import send_password_reset_email
+                send_password_reset_email(user, request)
+                messages.success(request, 'Password reset link has been sent to your email.')
+            else:
+                # Don't reveal if email exists or not for security
+                messages.success(request, 'If an account exists with that email, a password reset link has been sent.')
+            
+            return redirect('login')
+        except Exception as e:
+            messages.error(request, f'An error occurred. Please try again later.')
+            print(f"Password reset error: {e}")
+    
+    return render(request, 'voting/forgot_password.html')
+
+def reset_password(request, uidb64, token):
+    """Reset password view"""
+    from django.contrib.auth.tokens import default_token_generator
+    from django.utils.http import urlsafe_base64_decode
+    from django.utils.encoding import force_str
+    
+    try:
+        uid = force_str(urlsafe_base64_decode(uidb64))
+        user = User.objects.get(pk=uid)
+    except (TypeError, ValueError, OverflowError, User.DoesNotExist):
+        user = None
+    
+    if user is not None and default_token_generator.check_token(user, token):
+        if request.method == 'POST':
+            password1 = request.POST.get('password1')
+            password2 = request.POST.get('password2')
+            
+            if password1 == password2:
+                # Validate password strength
+                if len(password1) < 8:
+                    messages.error(request, 'Password must be at least 8 characters long.')
+                elif not any(char.isupper() for char in password1):
+                    messages.error(request, 'Password must contain at least one uppercase letter.')
+                elif not any(char.islower() for char in password1):
+                    messages.error(request, 'Password must contain at least one lowercase letter.')
+                elif not any(char.isdigit() for char in password1):
+                    messages.error(request, 'Password must contain at least one number.')
+                else:
+                    user.set_password(password1)
+                    user.save()
+                    messages.success(request, 'Password reset successful! You can now log in.')
+                    return redirect('login')
+            else:
+                messages.error(request, 'Passwords do not match.')
+        
+        return render(request, 'voting/reset_password.html', {'validlink': True})
+    else:
+        messages.error(request, 'Password reset link is invalid or has expired.')
+        return render(request, 'voting/reset_password.html', {'validlink': False})
+
     return render(request, 'voting/admin_dashboard.html', context)
