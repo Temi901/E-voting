@@ -139,11 +139,7 @@ def send_vote_confirmation_email(user, election, candidate):
         [user.email],
         html_message=html_message,
         fail_silently=False,
-    )from django.core.mail import send_mail
-from django.conf import settings
-from django.template.loader import render_to_string
-from django.utils.html import strip_tags
-from .models import Vote, Election, EmailLog
+    )
 
 def send_results_available_email(election):
     """
@@ -306,60 +302,6 @@ E-Voting System
     except Exception as e:
         print(f"Failed to send test email: {e}")
         return False
-
-
-def send_verification_email(user, request):
-    """Send email verification link to user"""
-    from django.contrib.auth.tokens import default_token_generator
-    from django.utils.http import urlsafe_base64_encode
-    from django.utils.encoding import force_bytes
-    from django.core.mail import send_mail
-    from django.conf import settings
-    from django.utils.html import strip_tags
-    
-    token = default_token_generator.make_token(user)
-    uid = urlsafe_base64_encode(force_bytes(user.pk))
-    
-    verification_url = f"{settings.SITE_URL}/verify-email/{uid}/{token}/"
-    
-    subject = 'Verify Your E-Voting Account'
-    html_message = f"""
-    <html>
-    <body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333;">
-        <div style="max-width: 600px; margin: 0 auto; padding: 20px;">
-            <h2 style="color: #1a3c5e;">Welcome to E-Voting System!</h2>
-            <p>Hello {user.first_name},</p>
-            <p>Thank you for registering. Please verify your email address by clicking the button below:</p>
-            <div style="text-align: center; margin: 30px 0;">
-                <a href="{verification_url}" 
-                   style="background-color: #1a3c5e; color: white; padding: 12px 30px; 
-                          text-decoration: none; border-radius: 5px; display: inline-block;">
-                    Verify Email Address
-                </a>
-            </div>
-            <p>Or copy and paste this link into your browser:</p>
-            <p style="background-color: #f5f5f5; padding: 10px; word-break: break-all;">
-                {verification_url}
-            </p>
-            <p style="color: #666; font-size: 14px;">
-                This link will expire in 24 hours. If you didn't create an account, please ignore this email.
-            </p>
-        </div>
-    </body>
-    </html>
-    """
-    
-    plain_message = strip_tags(html_message)
-    
-    send_mail(
-        subject,
-        plain_message,
-        settings.DEFAULT_FROM_EMAIL,
-        [user.email],
-        html_message=html_message,
-        fail_silently=False,
-    )
-
 
 def send_password_reset_email(user, request):
     """Send password reset link to user"""

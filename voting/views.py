@@ -17,34 +17,24 @@ def index(request):
     """Homepage view"""
     elections = Election.objects.filter(is_active=True).order_by('-start_date')[:3]
     return render(request, 'voting/index.html', {'elections': elections})
+
 def register_view(request):
-    """Voter registration view with email verification"""
+    """Voter registration view"""
     if request.method == 'POST':
         form = VoterRegistrationForm(request.POST)
         if form.is_valid():
             user = form.save()
-            
-            # Send verification email
-            try:
-                from .email_utils import send_verification_email
-                send_verification_email(user, request)
-                messages.success(
-                    request, 
-                    'Registration successful! Please check your email to verify your account before logging in.'
-                )
-            except Exception as e:
-                messages.warning(
-                    request,
-                    f'Account created but verification email failed to send. Please contact support. Error: {str(e)}'
-                )
-            
-            return redirect('login')
+            login(request, user)
+            messages.success(request, 'Registration successful! Welcome to E-Voting.')
+            return redirect('dashboard')
         else:
             messages.error(request, 'Registration failed. Please correct the errors below.')
     else:
         form = VoterRegistrationForm()
     
     return render(request, 'voting/register.html', {'form': form})
+
+
 def login_view(request):
     """User login view"""
     if request.method == 'POST':
