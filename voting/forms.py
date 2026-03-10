@@ -52,7 +52,7 @@ class VoterRegistrationForm(UserCreationForm):
     
     def clean_email(self):
         email = self.cleaned_data.get('email')
-        if User.objects.filter(email=email).exists():
+        if User.objects.filter(email=email,is_active=True).exists():
             raise forms.ValidationError('This email is already registered.')
         return email
     

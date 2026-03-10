@@ -11,7 +11,7 @@ from openpyxl.chart import BarChart, Reference
 from io import BytesIO
 from datetime import datetime
 import os
-
+from django.db.models import Count
 
 def generate_results_pdf(election):
     """
@@ -63,7 +63,10 @@ def generate_results_pdf(election):
     elements.append(Spacer(1, 0.2*inch))
     
     # Get candidates and votes
-    candidates = election.candidates.all().order_by('-votes__id')
+   from django.db.models import Count
+candidates = election.candidates.all().annotate(
+    vote_total=Count('vote')
+).order_by('-vote_total')
     total_votes = sum(candidate.vote_count() for candidate in candidates)
     
     # Create results table
@@ -188,7 +191,9 @@ def generate_results_excel(election):
         ws[f'{col}9'].alignment = Alignment(horizontal='center')
     
     # Get candidates and votes
-    candidates = election.candidates.all().order_by('-votes__id')
+    candidates = election.candidates.all().annotate(
+    vote_total=Count('vote')
+).order_by('-vote_total')
     total_votes = sum(candidate.vote_count() for candidate in candidates)
     
     # Fill in data
