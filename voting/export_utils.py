@@ -62,18 +62,17 @@ def generate_results_pdf(election):
     elements.append(results_heading)
     elements.append(Spacer(1, 0.2*inch))
     
-    # Get candidates and votes
-   from django.db.models import Count
-candidates = election.candidates.all().annotate(
-    vote_total=Count('vote')
-).order_by('-vote_total')
-    total_votes = sum(candidate.vote_count() for candidate in candidates)
-    
+# Get candidates and votes  
+    candidates = election.candidates.all().annotate(
+        vote_total=Count('votes')
+    ).order_by('-vote_total')
+    total_votes = sum(candidate.vote_total for candidate in candidates)
+
     # Create results table
     table_data = [['Rank', 'Candidate', 'Party', 'Votes', 'Percentage']]
-    
+
     for idx, candidate in enumerate(candidates, 1):
-        votes = candidate.vote_count()
+        votes = candidate.vote_total
         percentage = (votes / total_votes * 100) if total_votes > 0 else 0
         
         rank = f"🏆 {idx}" if idx == 1 else str(idx)
@@ -119,9 +118,10 @@ candidates = election.candidates.all().annotate(
     # Winner announcement
     if candidates.exists():
         winner = candidates[0]
+        winner_votes = winner.vote_total
         winner_text = f"""
         <b><font size="14" color="#27ae60">🎉 WINNER: {winner.name} ({winner.party})</font></b><br/>
-        <font size="12">Total Votes: {winner.vote_count()} ({(winner.vote_count()/total_votes*100):.1f}%)</font>
+        <font size="12">Total Votes: {winner_votes} ({(winner_votes/total_votes*100):.1f}%)</font>
         """
         elements.append(Paragraph(winner_text, styles['Normal']))
     
@@ -142,7 +142,6 @@ candidates = election.candidates.all().annotate(
     doc.build(elements)
     buffer.seek(0)
     return buffer
-
 
 def generate_results_excel(election):
     """
@@ -192,14 +191,14 @@ def generate_results_excel(election):
     
     # Get candidates and votes
     candidates = election.candidates.all().annotate(
-    vote_total=Count('vote')
+    vote_total=Count('votes')
 ).order_by('-vote_total')
-    total_votes = sum(candidate.vote_count() for candidate in candidates)
+    total_votes = sum(candidate.vote_total for candidate in candidates)
     
     # Fill in data
     row = 10
     for idx, candidate in enumerate(candidates, 1):
-        votes = candidate.vote_count()
+        votes = candidate.vote_total
         percentage = (votes / total_votes * 100) if total_votes > 0 else 0
         
         ws[f'A{row}'] = idx
