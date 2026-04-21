@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="light">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -15,6 +15,7 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
 
     <style>
+        /* ─── LIGHT MODE VARIABLES (default) ────────────────── */
         :root {
             --ink:        #0d0f14;
             --surface:    #f5f4f0;
@@ -31,6 +32,26 @@
             --radius:     12px;
             --nav-h:      72px;
             --transition: 0.28s cubic-bezier(.4,0,.2,1);
+            --navbar-bg:  #ffffff;
+            --footer-bg:  #0d0f14;
+        }
+
+        /* ─── DARK MODE VARIABLES ────────────────────────────── */
+        [data-theme="dark"] {
+            --ink:        #e8eaf0;
+            --surface:    #0f1117;
+            --card:       #1a1d27;
+            --accent:     #4a90d9;
+            --gold:       #c9a84c;
+            --gold-light: #f0d98c;
+            --muted:      #9ca3af;
+            --border:     #2a2d3a;
+            --success:    #34d399;
+            --danger:     #f87171;
+            --warning:    #fbbf24;
+            --info:       #60a5fa;
+            --navbar-bg:  #1a1d27;
+            --footer-bg:  #0a0c12;
         }
 
         *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -48,7 +69,7 @@
             min-height: 100vh;
             display: flex;
             flex-direction: column;
-            /* Subtle grain texture */
+            transition: background 0.4s ease, color 0.4s ease;
             background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='300' height='300' filter='url(%23n)' opacity='0.03'/%3E%3C/svg%3E");
         }
 
@@ -58,9 +79,10 @@
             top: 0;
             z-index: 1000;
             height: var(--nav-h);
-            background: var(--card);
+            background: var(--navbar-bg);
             border-bottom: 1px solid var(--border);
             box-shadow: 0 2px 20px rgba(0,0,0,0.06);
+            transition: background 0.4s ease, border-color 0.4s ease;
         }
 
         .navbar .container {
@@ -146,7 +168,6 @@
             border-color: rgba(26,60,94,0.12);
         }
 
-        /* Primary CTA nav item */
         .nav-menu li.nav-cta a {
             background: var(--accent);
             color: #fff;
@@ -160,7 +181,6 @@
             box-shadow: 0 6px 18px rgba(26,60,94,0.28);
         }
 
-        /* Gold accent nav item */
         .nav-menu li.nav-accent a {
             color: var(--gold);
             border-color: rgba(201,168,76,0.25);
@@ -171,12 +191,85 @@
             border-color: rgba(201,168,76,0.4);
         }
 
-        /* Divider pill */
         .nav-divider {
             width: 1px;
             height: 22px;
             background: var(--border);
             margin: 0 6px;
+        }
+
+        /* ─── DARK MODE TOGGLE ───────────────────────────────── */
+        /*
+         * This toggle is adapted from your togg.html / togg.css files.
+         * The checkbox is hidden; clicking the label slides the circle.
+         * JS below reads/writes localStorage so the preference persists.
+         */
+        .toggle-wrap {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-left: 8px;
+        }
+
+        .toggle-icon {
+            font-size: 0.85rem;
+            line-height: 1;
+            user-select: none;
+            transition: opacity 0.3s;
+        }
+
+        /* Hidden real checkbox */
+        #dark-mode-toggle {
+            visibility: hidden;
+            position: absolute;
+            width: 0;
+            height: 0;
+        }
+
+        /* The pill track — your .label from togg.css */
+        .toggle-label {
+            position: relative;
+            display: inline-block;
+            width: 52px;
+            height: 26px;
+            border-radius: 30px;
+            background-color: #cbd5e1;
+            cursor: pointer;
+            transition: background-color 0.35s ease;
+            flex-shrink: 0;
+        }
+
+        /* Checked state: track turns accent blue */
+        #dark-mode-toggle:checked + .toggle-label {
+            background-color: var(--accent);
+        }
+
+        /* The sliding circle — your .Circle from togg.css */
+        .toggle-circle {
+            width: 20px;
+            height: 20px;
+            background-color: #ffffff;
+            border-radius: 50%;
+            position: absolute;
+            top: 3px;
+            left: 3px;
+            box-shadow: 0 1px 4px rgba(0,0,0,0.2);
+            animation: toggleOff 0.25s linear forwards;
+        }
+
+        #dark-mode-toggle:checked + .toggle-label .toggle-circle {
+            animation: toggleOn 0.25s linear forwards;
+        }
+
+        /* Your original keyframes from togg.css, adjusted for new size */
+        @keyframes toggleOn {
+            0%   { transform: translateX(0); }
+            100% { transform: translateX(26px); }
+        }
+
+        @keyframes toggleOff {
+            0%   { transform: translateX(26px); }
+            100% { transform: translateX(0); }
         }
 
         /* ─── MESSAGES ───────────────────────────────────────── */
@@ -197,6 +290,8 @@
             font-weight: 500;
             border: 1px solid transparent;
             animation: alertIn 0.4s cubic-bezier(.4,0,.2,1) both;
+            background: var(--card);
+            color: var(--ink);
         }
 
         .alert-icon {
@@ -219,6 +314,12 @@
         .alert-info     { background: #eff6ff; color: var(--info);    border-color: #bfdbfe; }
         .alert-info     .alert-icon { background: #dbeafe; }
 
+        /* Dark mode alert overrides */
+        [data-theme="dark"] .alert-success  { background: rgba(52,211,153,0.08); border-color: rgba(52,211,153,0.2); }
+        [data-theme="dark"] .alert-danger   { background: rgba(248,113,113,0.08); border-color: rgba(248,113,113,0.2); }
+        [data-theme="dark"] .alert-warning  { background: rgba(251,191,36,0.08);  border-color: rgba(251,191,36,0.2); }
+        [data-theme="dark"] .alert-info     { background: rgba(96,165,250,0.08);  border-color: rgba(96,165,250,0.2); }
+
         @keyframes alertIn {
             from { opacity: 0; transform: translateY(-10px); }
             to   { opacity: 1; transform: translateY(0); }
@@ -230,8 +331,9 @@
         /* ─── FOOTER ─────────────────────────────────────────── */
         .footer {
             margin-top: 80px;
-            background: var(--ink);
+            background: var(--footer-bg);
             color: rgba(255,255,255,0.85);
+            transition: background 0.4s ease;
         }
 
         .footer-inner {
@@ -360,7 +462,7 @@
                 </a>
             </div>
 
-            <!-- Links -->
+            <!-- Links + Toggle -->
             <ul class="nav-menu">
                 {% if user.is_authenticated %}
                     <li>
@@ -399,6 +501,25 @@
                         </a>
                     </li>
                 {% endif %}
+
+                <!-- ── DARK MODE TOGGLE ── -->
+                <!--
+                    Built from your togg.html + togg.css files.
+                    The hidden checkbox drives the CSS animation (toggleOn / toggleOff).
+                    JavaScript below saves the choice to localStorage so it persists
+                    across pages and refreshes.
+                -->
+                <span class="nav-divider"></span>
+                <li>
+                    <div class="toggle-wrap" title="Toggle dark / light mode">
+                        <span class="toggle-icon" id="toggle-sun">☀️</span>
+                        <input type="checkbox" id="dark-mode-toggle">
+                        <label for="dark-mode-toggle" class="toggle-label">
+                            <div class="toggle-circle"></div>
+                        </label>
+                        <span class="toggle-icon" id="toggle-moon">🌙</span>
+                    </div>
+                </li>
             </ul>
         </div>
     </nav>
@@ -479,5 +600,43 @@
 
     <!-- Bootstrap JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+    <!-- ── DARK MODE SCRIPT ──────────────────────────────────
+         Logic:
+         1. On page load, read saved theme from localStorage.
+         2. Apply it immediately (before paint) to avoid flash.
+         3. When the toggle is clicked, flip the theme and save it.
+
+         The checkbox drives the CSS animation (toggleOn / toggleOff)
+         that you wrote in togg.css — we just keep it in sync with the
+         saved preference on every page load.
+    ─────────────────────────────────────────────────────── -->
+    <script>
+        (function () {
+            const html      = document.documentElement;   // <html data-theme="...">
+            const toggle    = document.getElementById('dark-mode-toggle');
+            const STORAGE_KEY = 'evoting-theme';
+
+            // ── Step 1: Apply saved preference on load ──
+            const saved = localStorage.getItem(STORAGE_KEY) || 'light';
+            applyTheme(saved);
+
+            // ── Step 2: Listen for toggle clicks ──
+            toggle.addEventListener('change', function () {
+                const next = this.checked ? 'dark' : 'light';
+                applyTheme(next);
+                localStorage.setItem(STORAGE_KEY, next);
+            });
+
+            // ── Helper: set theme on <html> and sync checkbox ──
+            function applyTheme(theme) {
+                html.setAttribute('data-theme', theme);
+
+                // Sync the checkbox state (important on page load)
+                toggle.checked = (theme === 'dark');
+            }
+        })();
+    </script>
+
 </body>
 </html>
