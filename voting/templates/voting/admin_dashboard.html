@@ -4,13 +4,6 @@
 
 {% block content %}
 <style>
-    :root {
-        --ink: #0d0f14; --surface: #f5f4f0; --card: #ffffff;
-        --accent: #1a3c5e; --gold: #c9a84c; --gold-light: #f0d98c;
-        --muted: #6b7280; --border: #e2ddd6; --radius: 12px;
-        --transition: 0.28s cubic-bezier(.4,0,.2,1);
-    }
-
     .admin-wrap { max-width: 1200px; margin: 0 auto; padding: 0 28px 80px; }
 
     /* ── PAGE HEADER ──────────────────────────────────────── */
@@ -219,6 +212,30 @@
         .admin-quick-actions { display: none; }
         .charts-grid { grid-template-columns: 1fr; }
     }
+
+    /* ── DARK MODE OVERRIDES ─────────────────────────────── */
+    [data-theme="dark"] .admin-banner {
+        background: linear-gradient(150deg, #080e18 0%, #0f1e33 100%);
+    }
+    [data-theme="dark"] .stat-card,
+    [data-theme="dark"] .admin-card,
+    [data-theme="dark"] .voter-row,
+    [data-theme="dark"] .election-item {
+        background: var(--card);
+        border-color: var(--border);
+    }
+    [data-theme="dark"] table {
+        color: var(--ink);
+    }
+    [data-theme="dark"] table thead {
+        background: rgba(74,144,217,0.15);
+    }
+    [data-theme="dark"] table tbody tr:hover {
+        background: rgba(255,255,255,0.03);
+    }
+    [data-theme="dark"] .badge-active { background: rgba(52,211,153,0.12); }
+    [data-theme="dark"] .badge-closed { background: rgba(156,163,175,0.12); }
+
 </style>
 
 <!-- Banner -->
@@ -495,4 +512,3 @@
 }());
 </script>
 {% endblock %}
-

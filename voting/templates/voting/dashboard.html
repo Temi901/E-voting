@@ -4,13 +4,6 @@
 
 {% block content %}
 <style>
-    :root {
-        --ink: #0d0f14; --surface: #f5f4f0; --card: #ffffff;
-        --accent: #1a3c5e; --gold: #c9a84c; --gold-light: #f0d98c;
-        --muted: #6b7280; --border: #e2ddd6; --radius: 12px;
-        --transition: 0.28s cubic-bezier(.4,0,.2,1);
-    }
-
     .dash-wrap { max-width: 1200px; margin: 0 auto; padding: 0 28px 80px; }
 
     /* ── WELCOME BANNER ─────────────────────────────────── */
@@ -208,6 +201,36 @@
         .stats-row { grid-template-columns: 1fr; }
         .dash-welcome-name { font-size: 1.6rem; }
     }
+
+    /* ── DARK MODE OVERRIDES ─────────────────────────────── */
+    [data-theme="dark"] .dash-banner-bg {
+        background: radial-gradient(ellipse 60% 80% at 80% 50%, rgba(201,168,76,0.08) 0%, transparent 60%),
+                    linear-gradient(150deg, #080e18 0%, #0f1e33 100%);
+    }
+    [data-theme="dark"] .stat-card {
+        background: var(--card);
+        border-color: var(--border);
+        box-shadow: 0 4px 16px rgba(0,0,0,0.3);
+    }
+    [data-theme="dark"] .stat-icon-wrap {
+        background: linear-gradient(135deg, #1e2d45 0%, #162236 100%);
+    }
+    [data-theme="dark"] .el-card {
+        background: var(--card);
+        border-color: var(--border);
+    }
+    [data-theme="dark"] .el-dates {
+        background: rgba(255,255,255,0.04);
+    }
+    [data-theme="dark"] .empty-state {
+        background: var(--card);
+        border-color: var(--border);
+    }
+    [data-theme="dark"] .note-success { background: rgba(52,211,153,0.08); border-color: rgba(52,211,153,0.2); }
+    [data-theme="dark"] .note-warning { background: rgba(251,191,36,0.08);  border-color: rgba(251,191,36,0.2); }
+    [data-theme="dark"] .note-gray    { background: rgba(156,163,175,0.08); border-color: rgba(156,163,175,0.15); }
+    [data-theme="dark"] .note-danger  { background: rgba(248,113,113,0.08); border-color: rgba(248,113,113,0.2); }
+
 </style>
 
 <!-- Banner -->

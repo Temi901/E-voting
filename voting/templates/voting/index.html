@@ -4,13 +4,6 @@
 
 {% block content %}
 <style>
-    :root {
-        --ink: #0d0f14; --surface: #f5f4f0; --card: #ffffff;
-        --accent: #1a3c5e; --gold: #c9a84c; --gold-light: #f0d98c;
-        --muted: #6b7280; --border: #e2ddd6; --radius: 12px;
-        --transition: 0.28s cubic-bezier(.4,0,.2,1);
-    }
-
     /* ── HERO ─────────────────────────────────────────────── */
     .hero {
         position: relative;
@@ -261,6 +254,22 @@
         .features-grid { grid-template-columns: 1fr; }
         .hero-stats-strip { grid-template-columns: repeat(2,1fr); }
     }
+
+    /* ── DARK MODE OVERRIDES ─────────────────────────────── */
+    [data-theme="dark"] .hero {
+        background: linear-gradient(150deg, #080e18 0%, #0f1e33 100%);
+    }
+    [data-theme="dark"] .feature-card,
+    [data-theme="dark"] .step-card,
+    [data-theme="dark"] .info-card {
+        background: var(--card);
+        border-color: var(--border);
+    }
+    [data-theme="dark"] section {
+        background: var(--surface);
+        color: var(--ink);
+    }
+
 </style>
 
 <!-- ── HERO ───────────────────────────────────────────────────── -->
